@@ -1,13 +1,35 @@
 import React from 'react';
+import { useState } from 'react';
+import { useContext } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../contexts/AuthProvider';
 
 const SignUp = () => {
-
     const {register, handleSubmit, formState: { errors }} = useForm();
+    const {createUser, updateUser} = useContext(AuthContext);
+    const [signUpError, setSignUpError] = useState('');
 
     const handleSignUp = data => {
         console.log(data);
+        setSignUpError('');
+        createUser(data.email, data.password)
+        .then(result => {
+            const user = result.user;
+            console.log(user);
+            toast("User created Successfully.");
+            const userInfo = {
+                displayName: data.name
+            }
+            updateUser(userInfo)
+            .then(() => {})
+            .catch(err => console.log(err));
+        })
+        .catch(error => {
+            console.log(error)
+            setSignUpError(error.message);
+        })
     }
 
     return (
@@ -44,6 +66,7 @@ const SignUp = () => {
                           {errors.password && <p className='text-red-500'>{errors.password.message}</p>}
                     </div>
                     <input className='btn btn-accent w-full mt-2' type="submit" value="SignUp" />
+                    {signUpError && <p className='text-red-500'>{signUpError}</p>}
                 </form>
                 <p>Already have an account?<Link className='text-secondary' to="/login">Please Login</Link></p>
                 <div className="divider">OR</div>
